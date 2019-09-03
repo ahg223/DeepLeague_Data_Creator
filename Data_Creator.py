@@ -2,8 +2,12 @@ import json
 import urllib.request
 from bs4 import BeautifulSoup
 import argparse
+from PIL import Image
+import os
+import secrets
 
-class DD_gatherer():
+
+class DD_gatherer:
     def __init__(self):
         self.opener=urllib.request.build_opener()
         self.opener.addheaders=[('User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]
@@ -77,16 +81,75 @@ class DD_gatherer():
                 try: self.gathering(url+name, local+name)
                 except: continue
 
-class DataCreator():
-    def init(self, ):
+class DataCreator:
+    def __init__(self, save, amount, noise, overlap):
+        self.save = save
+        self.amount = amount
+        self.noise = noise
+        self.overlap = overlap
 
-if __name == "__main__":
-    parser = argparse.ArgumentParser()
-    Parser.add_argument('--gathering', required=False, type=bool, help = "Gathering Img for creating data")
+    def saving():
+        path = "./Data/" 
+        
+    def base_creating(self):
+        mini_path = "./LOL_image/minimap/"
+        
+        with Image.open(mini_path + "mini_outter.png") as outter:
+            self.width, self.height = width, height = outter.size
+            minimap = Image.new("RGBA",(width, height))
+            with Image.open(mini_path + "mini_inner.png") as inner:
+                self.Size = Size = 50
+                Inner = inner.resize((width - Size, height - Size))
+                minimap.paste(Inner, (45, 45), Inner)
+                minimap.paste(outter, (0,0), outter)
+                #Inner.show()
+                #minimap.show()
+
+        self.base = minimap
+        minimap.save(r"./Data/test_base.png")
+
+    def hero_creating(self):
+        hero_path = "./LOL_image/character/"
+        self.position = []
+        self.base_creating()
+        minimap = self.base
+
+        hero_list = os.listdir(hero_path)
+        for i in range(len(hero_list)):
+            if hero_list[i] == ".DS_Store":
+                hero_list.pop(i)
+                break
+
+        Num = 10
+        hero_ran = []
+        for i in range(Num): hero_ran.append(secrets.choice(hero_list))
+
+        for hero in hero_ran:
+            width, height = secrets.randbelow(self.width - self.Size), secrets.randbelow(self.height - self.Size)
+            width, height = width + self.Size, height + self.Size
+            self.position.append([hero[:-4], width, height])
+            HERO = Image.open(hero_path + hero).resize((64, 64))
+            minimap.paste(HERO, (width, height), HERO)
+
+        self.hero = minimap
+        minimap.save(r"./Data/test_hero.png")
+
+    def noise_creating(self):
+        hero_path = "./LOL_image/character/"
+        self.hero_creating()
+        minimap = self.hero
+
+        
+
+if __name__ == "__main__":
+    Parser = argparse.ArgumentParser()
     Parser.add_argument('--save', required=True, help = "type of save form to save data - png or npm")
     Parser.add_argument('--amount', required=True ,type=int, help = "Gathering Img for creating data")
     Parser.add_argument('--noise', required=True ,type=int, help = "amount of noise at each png")
     Parser.add_argument('--overlap', required=True ,type=int, help = "percent of overlapped with character img")
+    Parser.add_argument('--gathering', required=False, type=bool, help = "Gathering Img for creating data")
+
+    args = Parser.parse_args()
 
     if args.gathering == "True":
         #For image update
@@ -95,4 +158,7 @@ if __name == "__main__":
         gatherer.get_minimap_base()
         gatherer.get_minimap_noise()
 
-
+    creator = DataCreator(args.save, args.amount, args.noise, args.overlap)
+    #creator.base_creating()
+    #creator.hero_creating()
+    creator.noise_creating()
