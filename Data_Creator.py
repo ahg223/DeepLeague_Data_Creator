@@ -55,11 +55,12 @@ class DD_gatherer:
         local = self.local + "minimap/"
         url = self.latest_url + "game/levels/map11/info/2dlevelminimap.png"
         self.gathering(url, local + "mini_inner.png")
-        url = self.latest_url + "game/data/menu_sc4/minimapreplay_if.png"
+        url = self.latest_url + "game/data/menu/textures/spectatorupdate.png"
         self.gathering(url, local + "mini_outter.png")
-        
+
     def get_minimap_noise(self):
         local = self.local + "noise/"
+        local_big = self.local + "ring/"
         url = self.latest_url + "game/data/menu/minimapicons/"
 
         with urllib.request.urlopen(url) as page:
@@ -68,7 +69,7 @@ class DD_gatherer:
 
             for link in page.find_all("a"):
                 name = link.get("href")
-                Test_icon = ["bard", "palisades", "leblanc", "odyssey", "victimcounter", "yorick", "test", "tt"]
+                Test_icon = ["bard", "palisades", "leblanc", "odyssey", "victimcounter", "yorick", "test", "tt", "as", "center", "cool", "cry", "dark", "destroy", "doom", "enemyp", "energy", "neutral", "friendly", "health", "king", "cp", "quest", "sg", "cannon", "slime", "sre", "vilemaw", "vo"]
                 if ".png" not in name: continue
                 Flag = False
                 for error in Test_icon:
@@ -78,8 +79,19 @@ class DD_gatherer:
                     
                 if Flag: continue
                 print(url+name)
-                try: self.gathering(url+name, local+name)
-                except: continue
+
+                Flag = True
+                big = ["ring", "tele", "recall", "tunnel"]
+                for arg in big:
+                    if arg in name:
+                        try: self.gathering(url+name, local_big+name)
+                        except: continue
+                        Flag = False
+                        break
+
+                if Flag:
+                    try: self.gathering(url+name, local+name)
+                    except: continue
 
 class DataCreator:
     def __init__(self, save, amount, noise, overlap):
@@ -98,9 +110,9 @@ class DataCreator:
             self.width, self.height = width, height = outter.size
             minimap = Image.new("RGBA",(width, height))
             with Image.open(mini_path + "mini_inner.png") as inner:
-                self.Size = Size = 50
+                self.Size = Size = 220
                 Inner = inner.resize((width - Size, height - Size))
-                minimap.paste(Inner, (45, 45), Inner)
+                minimap.paste(Inner, (Size, Size), Inner)
                 minimap.paste(outter, (0,0), outter)
                 #Inner.show()
                 #minimap.show()
@@ -135,11 +147,32 @@ class DataCreator:
         minimap.save(r"./Data/test_hero.png")
 
     def noise_creating(self):
-        hero_path = "./LOL_image/character/"
+        noise_path = "./LOL_image/noise/"
         self.hero_creating()
         minimap = self.hero
+        noise_list = os.listdir(noise_path)
 
-        
+        for i in range(len(noise_list)):
+            if noise_list[i] == ".DS_Store":
+                noise_list.pop(i)
+                break
+
+        noise_ran = []
+        for i in range(self.noise): noise_ran.append(secrets.choice(noise_list))
+        print(noise_ran)
+
+        for noise in noise_ran:
+            width, height = secrets.randbelow(self.width - self.Size), secrets.randbelow(self.height - self.Size)
+            width, height = width + self.Size, height + self.Size
+            NOISE = Image.open(noise_path + noise)
+            if NOISE.size[1] > 64: NOISE.resize((64, 64))
+            minimap.paste(NOISE, (width, height), NOISE)
+
+        self.noise = minimap
+        minimap.show()
+        minimap.save(r"./Data/test_noise.png")
+
+
 
 if __name__ == "__main__":
     Parser = argparse.ArgumentParser()
@@ -151,7 +184,7 @@ if __name__ == "__main__":
 
     args = Parser.parse_args()
 
-    if args.gathering == "True":
+    if args.gathering:
         #For image update
         gatherer = DD_gatherer()
         gatherer.get_character_list()
@@ -162,3 +195,6 @@ if __name__ == "__main__":
     #creator.base_creating()
     #creator.hero_creating()
     creator.noise_creating()
+
+    
+    
