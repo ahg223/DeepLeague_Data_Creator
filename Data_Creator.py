@@ -20,6 +20,7 @@ class DD_gatherer:
     def gathering(self, url, local):
         urllib.request.urlretrieve(url,local)
 
+
     def get_character_list(self):
         url = self.latest_url + "game/assets/characters/"
         version = input("typing version of LoL: ")
@@ -58,6 +59,7 @@ class DD_gatherer:
         self.gathering(url, local + "mini_inner.png")
         url = self.latest_url + "game/data/menu/textures/spectatorupdate.png"
         self.gathering(url, local + "mini_outter.png")
+
 
     def get_minimap_noise(self):
         local = self.local + "noise/"
@@ -103,9 +105,11 @@ class DataCreator:
         self.ping_len = ping
         self.DATA = []
 
+
     def stack(self):
         if self.save == "png": self.DATA.append(deepcopy(self.ping))
         elif self.save == "npy": self.DATA.append(np.array(self.ping))
+
 
     def saving(self):
         if self.save == "png":
@@ -134,6 +138,7 @@ class DataCreator:
 
         self.base = minimap
         minimap.save(r"./Data/test_base.png")
+
 
     def hero_creating(self):
         hero_path = "./LOL_image/character/"
@@ -167,6 +172,7 @@ class DataCreator:
         self.hero = minimap
         minimap.save(r"./Data/test_hero.png")
 
+
     def noise_creating(self):
         noise_path = "./LOL_image/noise/"
         self.base_creating()
@@ -192,16 +198,17 @@ class DataCreator:
         self.noise = minimap
         minimap.save(r"./Data/test_noise.png")
 
+
     def ping_creating(self):
         ping_path = "./LOL_image/ping/" 
-        self.hero_creating()
-        minimap = self.hero
-        ping_list = os.listdir(ping_path)
+        ping_tmp = os.listdir(ping_path)
+        teleport_list, ping_list = [], []
 
-        for i in range(len(ping_list)):
-            if ping_list[i] == ".DS_Store":
-                ping_list.pop(i)
-                break
+        for i in range(len(ping_tmp)):
+            if "ring" not in ping_tmp[i]: teleport_list.append(ping_tmp[i])
+            else: ping_list.append(ping_tmp[i])
+
+        minimap = self.teleport_creator(teleport_list)
 
         ping_ran = []
         for i in range(self.ping_len): ping_ran.append(secrets.choice(ping_list))
@@ -221,7 +228,25 @@ class DataCreator:
         self.ping = minimap
         #minimap.show()
         minimap.save(r"./Data/test_ping.png")
-        
+
+
+    def teleport_creator(self, teleport_list):
+        ping_path = "./LOL_image/ping/" 
+        self.hero_creating()
+        minimap = self.hero
+
+        teleport_ran=[]
+        for i in range(self.ping_len): teleport_ran.append(secrets.choice(teleport_list))
+        print(teleport_ran)
+
+        for ping in teleport_ran:
+            width, height, rotate = secrets.randbelow(self.innerwidth), secrets.randbelow(self.innerheight), secrets.randbelow(360)
+            width, height = width + self.Size, height + self.Size
+            p1 = p2 = 34
+            PING = Image.open(ping_path + ping).resize((p1, p2)).rotate(rotate)
+            minimap.paste(PING, (width, height), PING)
+
+        return minimap
 
 
 if __name__ == "__main__":
