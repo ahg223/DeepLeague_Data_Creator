@@ -125,7 +125,7 @@ class DataCreator:
             minimap = Image.new("RGBA",(width, height))
             with Image.open(mini_path + "mini_inner.png") as inner:
                 self.Size = Size = 215
-                self.innerwidth, self.innerheight = width - Size -15, height - Size -15
+                self.innerwidth, self.innerheight = width - Size -12, height - Size -12
                 Inner = inner.resize((self.innerwidth, self.innerheight))
                 minimap.paste(Inner, (Size, Size), Inner)
                 minimap.paste(outter, (0,0), outter)
@@ -139,8 +139,8 @@ class DataCreator:
         hero_path = "./LOL_image/character/"
         noise_path = "./LOL_image/noise/"
         self.position = []
-        self.base_creating()
-        minimap = self.base
+        self.noise_creating()
+        minimap = self.noise
 
         hero_list = os.listdir(hero_path)
         for i in range(len(hero_list)):
@@ -169,8 +169,8 @@ class DataCreator:
 
     def noise_creating(self):
         noise_path = "./LOL_image/noise/"
-        self.hero_creating()
-        minimap = self.hero
+        self.base_creating()
+        minimap = self.base
         noise_list = os.listdir(noise_path)
 
         for i in range(len(noise_list)):
@@ -185,8 +185,8 @@ class DataCreator:
         for noise in noise_ran:
             width, height = secrets.randbelow(self.innerwidth), secrets.randbelow( self.innerheight)
             width, height = width + self.Size, height + self.Size
-            NOISE = Image.open(noise_path + noise)
-            if NOISE.size[1] > 16: NOISE.resize((16, 16))
+            NOISE = Image.open(noise_path + noise).resize((16, 16))
+            #if NOISE.size[0] > 16: NOISE.resize((16, 16))
             minimap.paste(NOISE, (width, height), NOISE)
 
         self.noise = minimap
@@ -194,8 +194,8 @@ class DataCreator:
 
     def ping_creating(self):
         ping_path = "./LOL_image/ping/" 
-        self.noise_creating()
-        minimap = self.noise
+        self.hero_creating()
+        minimap = self.hero
         ping_list = os.listdir(ping_path)
 
         for i in range(len(ping_list)):
@@ -210,9 +210,13 @@ class DataCreator:
         for ping in ping_ran:
             width, height = secrets.randbelow(self.innerwidth), secrets.randbelow(self.innerheight)
             width, height = width + self.Size, height + self.Size
-            PING = Image.open(ping_path + ping).resize((34, 34))
+            p1 = p2 = secrets.randbelow(32) + 34
+            alpha = secrets.randbelow(255)
+            PING = Image.open(ping_path + ping).convert("RGBA").resize((p1, p2))
+            tmp = deepcopy(PING)
+            PING.putalpha(alpha)
             #if PING.size[1] > 32: PING.resize((34, 34))
-            minimap.paste(PING, (width, height), PING)
+            minimap.paste(PING, (width, height), tmp)
 
         self.ping = minimap
         #minimap.show()
